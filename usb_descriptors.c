@@ -28,7 +28,7 @@
 #include "get_serial.h"
 
 #if ( CDC_UART_INTF_COUNT > 0 )
-#define USB_BCD   0x0200
+#define USB_BCD   0x0210
 #else
 #define USB_BCD   0x0110
 #endif
@@ -40,7 +40,7 @@ tusb_desc_device_t const desc_device =
 {
     .bLength            = sizeof(tusb_desc_device_t),
     .bDescriptorType    = TUSB_DESC_DEVICE,
-    .bcdUSB             = USB_BCD,
+    .bcdUSB             = 0x0210,
     .bDeviceClass       = 0x00, // Each interface specifies its own
     .bDeviceSubClass    = 0x00, // Each interface specifies its own
     .bDeviceProtocol    = 0x00,
@@ -95,6 +95,53 @@ enum
 
 #define CONFIG_TOTAL_LEN  (TUD_CONFIG_DESC_LEN + TUD_VENDOR_DESC_LEN + (TUD_CDC_DESC_LEN * (CFG_TUD_CDC)))
 
+static uint8_t const desc_ms_os_20[] = 
+{
+  // DESCRIPTOR SET
+  10, 0,                  // length = 10
+  0x00, 0x00,             // MS_OS_20_SET_HEADER_DESCRIPTOR
+  0x00, 0x00, 0x03, 0x06, // Windows version >= 0x06030000
+  174, 0,                 // total length
+  // CONFIGURATION SUBSET
+  8, 0,                   // length = 8
+  0x01, 0x00,             // MS_OS_20_SUBSET_HEADER_CONFIGURATION
+  0x00,                   // configuration index
+  0x00,                   // reserved
+  164, 0,                 // total length
+  // FUNCTION SUBSET
+  8, 0,                   // length = 8
+  0x02, 0x00,             // MS_OS_20_SUBSET_HEADER_FUNCTION
+  ITF_NUM_PROBE,          // interface index
+  0x00,                   // reserved
+  156, 0,                 // total length
+  // FEATURE COMPATIBLE ID
+  20, 0,                  // length = 20
+  0x03, 0x00,             // MS_OS_20_FEATURE_COMPATIBLE_ID
+  'W', 'I', 'N', 'U', 'S', 'B', 0, 0,   // compatible ID
+  0, 0, 0, 0, 0, 0, 0, 0,               // sub compatible ID
+  // REGISTRY PROPERTY
+  128, 0,                 // length = 128
+  0x04, 0x00,             // MS_OS_20_FEATURE_REG_PROPERTY
+  0x01, 0x00,             // property type = STRING
+  40, 0,                  // property name length
+  'D', 0, 'e', 0, 'v', 0, 'i', 0, // property name = DeviceInterfaceGUID\0 
+  'c', 0, 'e', 0, 'I', 0, 'n', 0, //  
+  't', 0, 'e', 0, 'r', 0, 'f', 0, //  
+  'a', 0, 'c', 0, 'e', 0, 'G', 0, //  
+  'U', 0, 'I', 0, 'D', 0,   0, 0, // 
+  78, 0,                  // property data length
+  '{', 0, 'A', 0, '5', 0, 'D', 0, // property data = {A5DCBF10-6530-11D2-901F-00C04FB951ED}\0 
+  'C', 0, 'B', 0, 'F', 0, '1', 0, //  
+  '0', 0, '-', 0, '6', 0, '5', 0, //  
+  '3', 0, '0', 0, '-', 0, '1', 0, //  
+  '1', 0, 'D', 0, '2', 0, '-', 0, //  
+  '9', 0, '0', 0, '1', 0, 'F', 0, //  
+  '-', 0, '0', 0, '0', 0, 'C', 0, //  
+  '0', 0, '4', 0, 'F', 0, 'B', 0, //  
+  '9', 0, '5', 0, '1', 0, 'E', 0, //  
+  'D', 0, '}', 0,   0, 0,         // 
+};
+
 uint8_t const desc_configuration[CONFIG_TOTAL_LEN] =
 {
   // Config number, interface count, string index, total length, attribute, power in mA
@@ -109,6 +156,13 @@ uint8_t const desc_configuration[CONFIG_TOTAL_LEN] =
 #if ( CDC_UART_INTF_COUNT > 1 )
   TUD_CDC_DESCRIPTOR(ITF_NUM_CDC_2, 5, CDC_NOTIF_EP2_NUM, 8, CDC_OUT_EP2_NUM, CDC_IN_EP2_NUM, 64),
 #endif
+};
+
+uint8_t const desc_bos[] = 
+{
+  // MS OS 20 descriptor
+  TUD_BOS_DESCRIPTOR(TUD_BOS_DESC_LEN + TUD_BOS_MICROSOFT_OS_DESC_LEN, 1),
+  TUD_BOS_MS_OS_20_DESCRIPTOR(sizeof(desc_ms_os_20), 0x01)
 };
 
 // Invoked when received GET CONFIGURATION DESCRIPTOR
@@ -128,8 +182,8 @@ uint8_t const * tud_descriptor_configuration_cb(uint8_t index)
 char const *string_desc_arr[] =
 {
     (const char[]){0x09, 0x04}, // 0: is supported language is English (0x0409)
-    "Jean THOMAS",              // 1: Manufacturer
-    "DirtyJTAG",                // 2: Product
+    "Chipinventor LTDA",              // 1: Manufacturer
+    "DevChipBoard programmer",                // 2: Product
     usb_serial,                 // 3: Serial, uses flash unique ID
 #if ( CDC_UART_INTF_COUNT > 0 )
     "DirtyJTAG CDC 0", // 4: CDC Interface 0
@@ -175,4 +229,21 @@ uint16_t const* tud_descriptor_string_cb(uint8_t index, uint16_t langid)
   _desc_str[0] = (TUSB_DESC_STRING << 8 ) | (2*chr_count + 2);
 
   return _desc_str;
+}
+
+uint8_t const* tud_descriptor_bos_cb(void)
+{
+  return desc_bos;
+}
+
+// Invoked when control request is arrived.
+bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_request_t const * request)
+{
+  if (stage != CONTROL_STAGE_SETUP) return true;
+
+  if( request->bmRequestType_bit.type == TUSB_REQ_TYPE_VENDOR && request->bRequest == 0x01 && request->wValue == 0x0000 && request->wIndex == 0x0007 ) {
+    // MS OS 2.0 descriptor request
+    return tud_control_xfer(rhport, request, (void*)desc_ms_os_20, sizeof(desc_ms_os_20));
+  }
+  return false;
 }
