@@ -13,6 +13,8 @@ if (EXISTS ${picoVscode})
 endif()
 # ====================================================================================
 set(PICO_BOARD pico CACHE STRING "Board type")
+add_compile_definitions(PICO_XOSC_STARTUP_DELAY_MULTIPLIER=64)
+
 
 # Generated Cmake Pico project file
 
