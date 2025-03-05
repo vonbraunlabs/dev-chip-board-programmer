@@ -11,7 +11,7 @@
 #include "cmd.h"
 #include "get_serial.h"
 
-#include "dirtyJtagConfig.h"
+#include "chipProgrammerConfig.h"
 
 #define MULTICORE
 

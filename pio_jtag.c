@@ -1,6 +1,6 @@
 #include <hardware/clocks.h>
 #include "hardware/dma.h"
-#include "dirtyJtagConfig.h"
+#include "chipProgrammerConfig.h"
 #include "pio_jtag.h"
 #include "jtag.pio.h"
 

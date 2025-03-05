@@ -23,7 +23,7 @@
  *
  */
 
-#include "dirtyJtagConfig.h"
+#include "chipProgrammerConfig.h"
 #include "tusb.h"
 #include "get_serial.h"
 
@@ -183,13 +183,13 @@ char const *string_desc_arr[] =
 {
     (const char[]){0x09, 0x04}, // 0: is supported language is English (0x0409)
     "Chipinventor LTDA",              // 1: Manufacturer
-    "DevChipBoard programmer",                // 2: Product
+    "chipProgrammer",                // 2: Product
     usb_serial,                 // 3: Serial, uses flash unique ID
 #if ( CDC_UART_INTF_COUNT > 0 )
-    "DirtyJTAG CDC 0", // 4: CDC Interface 0
+    "chipProgrammer serial", // 4: CDC Interface 0
 #endif
 #if ( CDC_UART_INTF_COUNT > 1 )
-    "DirtyJTAG CDC 1"  // 5: CDC Interface 1
+    "chipProgrammer CDC 1"  // 5: CDC Interface 1
 #endif
 };
 

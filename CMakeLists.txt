@@ -14,7 +14,7 @@ endif()
 # ====================================================================================
 set(PICO_BOARD pico CACHE STRING "Board type")
 add_compile_definitions(PICO_XOSC_STARTUP_DELAY_MULTIPLIER=64)
-
+add_compile_definitions(PICO_STDIO_USB_CONNECTION_WITHOUT_DTR=1)
 
 # Generated Cmake Pico project file
 
@@ -32,15 +32,15 @@ set(CMAKE_CXX_STANDARD 17)
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(dirtyJtag C CXX ASM)
+project(chipProgrammer C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(dirtyJtag
-		dirtyJtag.c
+add_executable(chipProgrammer
+		chipProgrammer.c
 		usb_descriptors.c
 		pio_jtag.c
         cdc_uart.c
@@ -49,21 +49,21 @@ add_executable(dirtyJtag
         led.c
 )
 
-target_include_directories(dirtyJtag PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(chipProgrammer PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
-pico_generate_pio_header(dirtyJtag ${CMAKE_CURRENT_LIST_DIR}/jtag.pio)
+pico_generate_pio_header(chipProgrammer ${CMAKE_CURRENT_LIST_DIR}/jtag.pio)
 
-pico_set_program_name(dirtyJtag "dirtyJtag")
-pico_set_program_version(dirtyJtag "0.1")
+pico_set_program_name(chipProgrammer "chipProgrammer")
+pico_set_program_version(chipProgrammer "0.1")
 
-#pico_enable_stdio_uart(dirtyJtag 0)
-#pico_enable_stdio_usb(dirtyJtag 0)
+#pico_enable_stdio_uart(chipProgrammer 0)
+#pico_enable_stdio_usb(chipProgrammer 0)
 
 # Add the standard library to the build
-target_link_libraries(dirtyJtag PRIVATE pico_stdlib)
+target_link_libraries(chipProgrammer PRIVATE pico_stdlib)
 
 # Add any user requested libraries
-target_link_libraries(dirtyJtag PRIVATE
+target_link_libraries(chipProgrammer PRIVATE
     hardware_pio
 	hardware_dma
 	pico_unique_id
@@ -72,5 +72,5 @@ target_link_libraries(dirtyJtag PRIVATE
 	pico_multicore
 )
 
-pico_add_extra_outputs(dirtyJtag)
+pico_add_extra_outputs(chipProgrammer)
 

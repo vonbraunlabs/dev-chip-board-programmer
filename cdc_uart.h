@@ -26,7 +26,7 @@
 #ifndef CDC_UART_H
 #define CDC_UART_H
 
-#include "dirtyJtagConfig.h"
+#include "chipProgrammerConfig.h"
 
 #define USBUSART_BAUDRATE 115200
 
