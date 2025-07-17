@@ -6,10 +6,10 @@ int LedRxPin = 0;
 int LedTxPin = 0;
 int LedErrorPin = 0;
 
-void led_init( bool inverted, int ledRxPin, int ledTXPin, int ledErrorPin_ ) {
-    LedTxPin = ledTXPin;
+void led_init( bool inverted, int ledTxPin, int ledRxPin, int errorLedPin ) {
+    LedTxPin = ledTxPin;
     LedRxPin = ledRxPin;
-    LedErrorPin = ledErrorPin_;
+    LedErrorPin = errorLedPin;
     LedInverted = inverted;
 
     if ( LedTxPin != -1 ) {
@@ -37,7 +37,7 @@ void led_init( bool inverted, int ledRxPin, int ledTXPin, int ledErrorPin_ ) {
 
 void led_tx( bool state ) {
     if ( LedTxPin != -1 )  
-        gpio_put(LedRxPin, LedInverted ^ state);
+        gpio_put(LedTxPin, LedInverted ^ state);
 }
 
 void led_rx( bool state ) {
